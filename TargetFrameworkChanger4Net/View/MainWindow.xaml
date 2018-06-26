@@ -1,0 +1,136 @@
+﻿<Window x:Class="TargetFrameworkChanger4Net.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TargetFrameworkChanger4Net"
+        xmlns:viewm="clr-namespace:TargetFrameworkChanger4Net.ViewModel"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+        mc:Ignorable="d" x:Name="AppMainWindow"
+        Title="Target Framework Changer 4Net" Height="650" Width="800">
+    <Window.Resources>
+        <viewm:ViewModel x:Key="vm" />
+        <local:MultiValueConvert x:Key="multiconv" />
+    </Window.Resources>
+    <Grid>
+        <Label x:Name="lblSolHdr" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Please select a solution file" Margin="10,13,0,0" />
+        <Button x:Name="btnSolSelect" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Select File" Margin="166,16,0,0" 
+                Command="{Binding Source={StaticResource ResourceKey=vm}, Path=FileOpenDialogCmd}" 
+                CommandParameter="{Binding ElementName=AppMainWindow}" Width="57" Height="20" />
+        <Label x:Name="lblSolPath" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="228,13,0,0" Width="554"
+                Content="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.SolutionFileName, Mode=OneWay, NotifyOnSourceUpdated=True}" />
+        <Label x:Name="lblMessage" HorizontalAlignment="Left" VerticalAlignment="Top" Width="554" Height="28"
+                 Background="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.MessageBackground}"
+               BorderBrush="Black" BorderThickness="1.0" VerticalContentAlignment="Center">
+            <Label.Content>
+                <TextBlock>
+                    <TextBlock.Inlines>
+                        <Run FontWeight="Bold" FontSize="11" Text="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.Message, PresentationTraceSources.TraceLevel=High}" />
+                    </TextBlock.Inlines>
+                </TextBlock>
+            </Label.Content>
+            <Label.Style>
+                <Style TargetType="Label">
+                    <Setter Property="Margin" Value="801,13,0,0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.DisplayMessage}" Value="true">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="Margin" BeginTime="00:00:00">
+                                            <EasingThicknessKeyFrame KeyTime="00:00:00" Value="801,13,0,0" />
+                                            <EasingThicknessKeyFrame KeyTime="00:00:03" Value="228,13,0,0" />
+                                            <EasingThicknessKeyFrame KeyTime="00:00:09" Value="228,13,0,0" />
+                                            <EasingThicknessKeyFrame KeyTime="00:00:12" Value="801,13,0,0" />
+                                        </ThicknessAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+
+        <Label x:Name="LblTargetFramework" Content="Please select target framework" Margin="10,40,0,540" HorizontalAlignment="Left" VerticalAlignment="Center" />
+        <Button x:Name="BtnVersionSel" Content="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.VersionBtnContent}" Margin="180,45,525,545" Width="70" Height="20" 
+                Command="{Binding Source={StaticResource ResourceKey=vm}, Path=ShowVersionsCmd}" CommandParameter="{Binding ElementName=AppMainWindow}" />
+        <ListBox x:Name="LstBoxVersionSel" ItemsSource="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.ListInstalledVersions}" Margin="178,45,505,442" Width="90" HorizontalAlignment="Left" SelectedIndex="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.LstVerSelectedIndex, UpdateSourceTrigger=PropertyChanged}" Panel.ZIndex="1">
+            <ListBox.Style>
+                <Style TargetType="ListBox">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=LstBoxVersionSel, Path=SelectedIndex}" Value="-1">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.Style>
+        </ListBox>
+
+        <Button x:Name="BtnChangeVersion" Content="Change Target Framework Version" Margin="260,40,315,540" Width="200" Height="20" 
+                Command="{Binding Source={StaticResource ResourceKey=vm}, Path=ChangeTargetFrameworkVersionsCmd}" >
+            <Button.CommandParameter>
+                <MultiBinding Converter="{StaticResource multiconv}" ConverterParameter="ChangeTargetFrameworkVersions">
+                    <Binding ElementName="BtnVersionSel" Path="Content" />
+                    <Binding ElementName="ListViewProjects" />
+                    <Binding ElementName="AppMainWindow" />
+                </MultiBinding>
+            </Button.CommandParameter>
+        </Button>
+
+        <Button x:Name="BtnUndoFrameworkChange" Content="Undo Framework Change" Margin="475,40,150,540" Height="20" Width="155"
+                Command="{Binding Source={StaticResource ResourceKey=vm}, Path=UndoChangeTargetFrameworkVersionsCmd}" >
+            <Button.CommandParameter>
+                <MultiBinding Converter="{StaticResource multiconv}" ConverterParameter="ChangeTargetFrameworkVersions">
+                    <Binding ElementName="BtnVersionSel" Path="Content" />
+                    <Binding ElementName="ListViewProjects" />
+                    <Binding ElementName="AppMainWindow" />
+                </MultiBinding>
+            </Button.CommandParameter>
+        </Button>
+
+        <Button x:Name="BtnDeleteObjFolder" Content="Delete Obj Folder" Margin="620,40,15,540" Height="20" Width="110"
+                Command="{Binding Source={StaticResource ResourceKey=vm}, Path=DeleteObjFolderCmd}" CommandParameter="{Binding ElementName=AppMainWindow}" >
+        </Button>
+
+        <Border x:Name="HeaderBorder" BorderBrush="Teal" BorderThickness="1.0" Margin="10,81,10,491">
+            <StackPanel x:Name="HeaderStackP" Orientation="Horizontal" Margin="6,-3,-1,-1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="772" Height="44">
+                <CheckBox x:Name="HeaderChkBox" Command="{Binding Source={StaticResource ResourceKey=vm}, Path=CheckBoxCmd}" BorderBrush="AntiqueWhite" BorderThickness="1.0" VerticalAlignment="Center" Background="Teal" Foreground="AntiqueWhite">
+                    <CheckBox.CommandParameter>
+                        <MultiBinding Converter="{StaticResource multiconv}" ConverterParameter="SelectAll">
+                            <Binding Path="IsChecked" RelativeSource="{RelativeSource Mode=Self}" />
+                            <Binding ElementName="ListViewProjects" />
+                            <Binding ElementName="AppMainWindow" />
+                        </MultiBinding>
+                    </CheckBox.CommandParameter>
+                </CheckBox>
+                <Label x:Name="HeaderType" Content="Type" BorderBrush="AntiqueWhite" BorderThickness="1.0" HorizontalAlignment="Left" Height="30" Width="50" VerticalAlignment="Center" HorizontalContentAlignment="Center" Background="Teal" Foreground="AntiqueWhite" />
+                <Label x:Name="HeaderV" Content="V." BorderBrush="AntiqueWhite" BorderThickness="1.0" VerticalAlignment="Center" Height="30" Width="51" HorizontalAlignment="Left" HorizontalContentAlignment="Center" Background="Teal" Foreground="AntiqueWhite" />
+                <Label x:Name="HeaderName" Content="Project Name" BorderBrush="AntiqueWhite" BorderThickness="1.0" HorizontalAlignment="Left" Height="30" VerticalAlignment="Center" Background="Teal" Foreground="AntiqueWhite" />
+            </StackPanel>
+        </Border>
+
+        <ListView x:Name="ListViewProjects" ItemsSource="{Binding Source={StaticResource ResourceKey=vm}, Path=TheMainModel.ListProjects, diag:PresentationTraceSources.TraceLevel=High}" HorizontalAlignment="Left" VerticalAlignment="Top" Height="499" Width="772" Margin="10,120,0,0">
+            <ListView.ItemTemplate>
+                <ItemContainerTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox Command="{Binding Source={StaticResource ResourceKey=vm}, Path=CheckBoxCmd}" VerticalAlignment="Center" IsChecked="{Binding IsSelected}">
+                            <CheckBox.CommandParameter>
+                                <MultiBinding Converter="{StaticResource multiconv}" ConverterParameter="SelectedProject">
+                                    <Binding Path="ProjectEntryType" />
+                                    <Binding Path="ProjectGuid" />
+                                    <Binding Path="IsSelected" />
+                                    <Binding ElementName="AppMainWindow" />
+                                </MultiBinding>
+                            </CheckBox.CommandParameter>
+                        </CheckBox>
+                        <Label Content="{Binding ProjectEntryType}" BorderBrush="Teal" BorderThickness="1.0" />
+                        <Label Content="{Binding CurrentTargetFrameworkVersion}" BorderBrush="Teal" BorderThickness="1.0" VerticalAlignment="Center" Width="51" />
+                        <Label Content="{Binding AssemblyName}" BorderBrush="Teal" BorderThickness="1.0" />
+                    </StackPanel>
+                </ItemContainerTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Window>
